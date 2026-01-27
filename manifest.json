@@ -1,0 +1,16 @@
+{
+  "short_name": "PixelDungeon",
+  "name": "Pixel Dungeon: Ultimate Edition",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1068/1068779.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#050505",
+  "display": "standalone",
+  "scope": "./",
+  "theme_color": "#a22"
+}

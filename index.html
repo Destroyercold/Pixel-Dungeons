@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pixel Dungeon: Ultimate Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="hud">
+        <div style="display:flex; flex-direction:column;">
+            <span>JUGADOR 1 <span id="ammo-hud" style="color:#ff0; margin-left:10px"></span></span>
+            <div class="bar-container">
+                <div id="hp-bar" class="hp-fill" style="width:100%"></div>
+                <div id="arm-bar" class="arm-fill" style="width:0%"></div>
+            </div>
+            <span id="weapon-txt" style="font-size:9px; color:#0af; margin-top:5px;">ARMA: ESPADA (LVL 1)</span>
+            <div id="relics-list" style="margin-top:5px; display:flex; gap:2px; flex-wrap: wrap; width: 200px;"></div>
+        </div>
+        
+        <div style="text-align:center">
+            <span style="color:#888">BIOMA</span><br>
+            <span id="biome-txt" style="color:#0af">CRIPTA</span>
+            <div id="diff-txt" class="diff-text">PODER ENEMIGO: 100%</div>
+            <div style="margin-top:5px; font-size:9px; color:#888" id="shield-status"></div>
+            <div id="madman-timer">TIEMPO: 60</div>
+        </div>
+
+        <div style="text-align:right">
+            <span>ORO: <span id="gold-txt" style="color:#ff0">0</span></span><br><br>
+            <span>NIVEL: <span id="wave-txt">1</span></span>
+            <div id="p2-hud-area" style="margin-top: 10px;">
+                <span style="color:#f44; font-size: 9px;">JUGADOR 2</span>
+                <div class="bar-container p2-bar" style="width: 150px; height: 10px; margin-left: auto;">
+                    <div id="p2-hp-bar" class="hp-fill p2-fill" style="width:100%"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="mission-hud">
+            MISIÓN: <span id="mission-desc" style="color:#fe0">...</span> <span id="mission-progress">[0/0]</span>
+        </div>
+    </div>
+
+    <div id="game-wrapper">
+        <canvas id="game" width="1000" height="700"></canvas>
+        <div id="boss-alert" class="boss-text">! ATAQUE ESPECIAL !</div>
+        
+        <div id="sandbox-controls">
+            <div style="color:#0ff; margin-bottom:5px; border-bottom:1px solid #0ff;">SANDBOX</div>
+            <button class="sb-btn" id="btn-bot-aggro" onclick="toggleSandboxBot()">BOT: PASIVO</button>
+            <button class="sb-btn" onclick="spawnLevel()">RESET BOT</button>
+        </div>
+
+        <div id="main-menu" class="overlay">
+            <h1 style="color:#a22; text-shadow:4px 4px #000; font-size:40px; margin-bottom:20px;">POLISHED<br>DUNGEON</h1>
+            <h3 style="color:#fe0; font-size:12px; margin-bottom:20px;">VERSIÓN 10.0: CLASSIC</h3>
+            
+            <div class="char-select">
+                <div class="p-select">
+                    <div style="color:#0af; margin-bottom:5px;">JUGADOR 1</div>
+                    <div id="p1-preview" class="skin-preview"></div>
+                    <div><button class="arrow-btn" onclick="changeSkin(1, -1)"><</button><span id="p1-skin-name" style="font-size:10px; margin:0 5px;">AZUL</span><button class="arrow-btn" onclick="changeSkin(1, 1)">></button></div>
+                    <div class="class-display">
+                        <div style="margin-bottom:5px;">CLASE</div>
+                        <button class="arrow-btn" onclick="changeClass(1, -1)"><</button>
+                        <span id="p1-class-name" style="color:#fff; margin:0 5px;">GUERRERO</span>
+                        <button class="arrow-btn" onclick="changeClass(1, 1)">></button>
+                        <div id="p1-class-desc" style="font-size:8px; color:#aaa; margin-top:5px;">Espada + HP</div>
+                    </div>
+                </div>
+                <div class="p-select">
+                    <div style="color:#f44; margin-bottom:5px;">JUGADOR 2</div>
+                    <div id="p2-preview" class="skin-preview"></div>
+                    <div><button class="arrow-btn" onclick="changeSkin(2, -1)"><</button><span id="p2-skin-name" style="font-size:10px; margin:0 5px;">ROJO</span><button class="arrow-btn" onclick="changeSkin(2, 1)">></button></div>
+                     <div class="class-display">
+                        <div style="margin-bottom:5px;">CLASE</div>
+                        <button class="arrow-btn" onclick="changeClass(2, -1)"><</button>
+                        <span id="p2-class-name" style="color:#fff; margin:0 5px;">GUERRERO</span>
+                        <button class="arrow-btn" onclick="changeClass(2, 1)">></button>
+                        <div id="p2-class-desc" style="font-size:8px; color:#aaa; margin-top:5px;">Espada + HP</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-btn-group">
+                <button id="btn-continue" class="btn" style="border-color:#0f0; display:none;" onclick="loadGame()">CONTINUAR PARTIDA</button>
+                <button id="btn-mode" class="btn" style="border-color:#a0a" onclick="toggleGameMode()">MODO: NORMAL</button>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn" onclick="startGame(false)">JUGAR SOLO</button>
+                    <button class="btn" onclick="startGame(true)">CO-OP</button>
+                </div>
+                <button class="btn" style="border-color:#fe0" onclick="openOptions()">OPCIONES</button>
+                <button class="btn" onclick="deleteGame()" style="border-color:#f44; font-size:10px; padding:10px;">BORRAR DATOS</button>
+            </div>
+        </div>
+
+        <div id="options-menu" class="overlay" style="display:none; justify-content: flex-start; padding-top: 50px;">
+            <h2 style="color:#fe0">CONFIGURACIÓN</h2>
+            
+            <div class="music-section">
+                <h3 style="color:#0af; margin-top:0;">MÚSICA PERSONALIZADA</h3>
+                <input type="file" id="music-input" accept="audio/*" style="display:none" onchange="loadMusic(this)">
+                <button class="btn btn-small" style="margin-bottom:10px; border-color:#0af; color:#0af;" onclick="document.getElementById('music-input').click()">SUBIR CANCIÓN (MP3/WAV)</button>
+                <div id="song-name" style="font-size:10px; color:#aaa; margin-bottom:10px;">NINGUNA CANCIÓN SELECCIONADA</div>
+                <div style="display:flex; justify-content:center; align-items:center; gap:20px;">
+                    <button class="key-btn" onclick="toggleMusic()">PLAY/PAUSE</button>
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <span style="font-size:8px; margin-bottom:5px;">VOLUMEN</span>
+                        <input type="range" min="0" max="1" step="0.1" value="0.5" onchange="setMusicVol(this.value)" style="width:100px;">
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 20px; margin-bottom: 10px;">
+                <div class="opt-row" style="width: auto; gap: 10px;"><span>SFX:</span><span id="opt-sfx" class="opt-val" onclick="toggleOpt('sfx')">ON</span></div>
+                <div class="opt-row" style="width: auto; gap: 10px;"><span>PARTICULAS:</span><span id="opt-part" class="opt-val" onclick="toggleOpt('part')">ON</span></div>
+            </div>
+            <h3 style="margin-bottom: 0;">CONTROLES</h3>
+            <div class="controls-grid">
+                <div class="control-group" id="p1-controls"><h3>JUGADOR 1</h3></div>
+                <div class="control-group" id="p2-controls"><h3>JUGADOR 2</h3></div>
+            </div>
+            <div style="margin-top: 20px;">
+                <button class="btn btn-small" onclick="restoreDefaultKeys()">RESET KEYS</button>
+                <button class="btn btn-small" onclick="closeOptions()">VOLVER</button>
+            </div>
+        </div>
+
+        <div id="pause-menu" class="overlay" style="display:none;">
+            <h2 style="color:#fff">JUEGO PAUSADO</h2>
+            <button class="btn" onclick="togglePause()">CONTINUAR</button>
+            <button class="btn" style="border-color:#0f0" onclick="saveGame()">GUARDAR PROGRESO</button>
+            <button class="btn" style="border-color:#fe0" onclick="openOptions(true)">OPCIONES</button>
+            <button class="btn" style="border-color:#f44" onclick="location.reload()">MENU PRINCIPAL</button>
+        </div>
+
+        <div id="game-over-menu" class="overlay" style="display:none;">
+            <h1 style="color:#f00; font-size:50px">HAS MUERTO</h1>
+            <p style="margin:20px">NIVEL ALCANZADO: <span id="death-wave" style="color:#fe0">0</span></p>
+            <p style="margin-bottom:30px">ORO ACUMULADO: <span id="death-gold" style="color:#fe0">0</span></p>
+            <div style="color:#888; font-size:10px; margin-bottom:20px;">(PARTIDA GUARDADA ELIMINADA)</div>
+            <button class="btn" onclick="location.reload()">REINTENTAR</button>
+        </div>
+
+        <div id="enchant-menu" class="overlay">
+            <h2 style="color:#f0f; text-shadow: 0 0 10px #a0a;">MESA DE ENCANTAMIENTOS</h2>
+            <p style="color:#fff; font-size:10px;">ELIGE UN PODER PARA: <span id="ench-weapon-name" style="color:#fe0">ARMA</span></p>
+            <div class="enchant-cards" id="enchant-container"></div>
+        </div>
+
+        <div id="shop-menu" class="overlay" style="display:none;">
+            <h2 style="color:#fe0; margin-bottom:10px;">MERCADO NEGRO</h2>
+            <p style="margin-bottom:10px;">ORO: <span id="shop-gold" style="color:#fe0">0</span> <span id="coop-msg" style="font-size:10px; color:#f44; display:none;">(CO-OP: ITEMS PARA AMBOS)</span></p>
+            <button class="btn btn-refresh" onclick="refreshShop()">RESET TIENDA ($50)</button>
+            <div class="shop-container">
+                <div class="shop-col" style="border-color:#ccc">
+                    <div class="shop-title">ARSENAL (RNG)</div>
+                    <div id="shop-weapons-rng"></div>
+                </div>
+                <div class="shop-col" style="border-color:#0af">
+                    <div class="shop-title" style="color:#0af">RELIQUIAS</div>
+                    <div id="shop-relics-rng"></div>
+                </div>
+                <div class="shop-col" style="border-color:#f44">
+                    <div class="shop-title" style="color:#f44">SUMINISTROS</div>
+                    <div id="shop-consumables"></div>
+                    <div class="shop-title" style="color:#f44; margin-top:20px;">VENDER ARMAS</div>
+                    <div id="shop-sell"></div>
+                </div>
+            </div>
+            <button class="btn" style="width:500px" onclick="nextWave()">SIGUIENTE NIVEL</button>
+        </div>
+    </div>
+    
+    <div id="inventory-hud"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
