@@ -2,9 +2,11 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pixel Dungeon: Ultimate Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
@@ -55,7 +57,7 @@
 
         <div id="main-menu" class="overlay">
             <h1 style="color:#a22; text-shadow:4px 4px #000; font-size:40px; margin-bottom:20px;">POLISHED<br>DUNGEON</h1>
-            <h3 style="color:#fe0; font-size:12px; margin-bottom:20px;">VERSIÓN 10.0: CLASSIC</h3>
+            <h3 style="color:#fe0; font-size:12px; margin-bottom:20px;">VERSIÓN 10.0: MOBILE</h3>
             
             <div class="char-select">
                 <div class="p-select">
@@ -176,6 +178,37 @@
     
     <div id="inventory-hud"></div>
 
+    <div id="mobile-controls">
+        <div id="dpad">
+            <div class="dpad-row"><button class="d-btn" id="m-up">?</button></div>
+            <div class="dpad-row">
+                <button class="d-btn" id="m-left">?</button>
+                <button class="d-btn" id="m-down">?</button>
+                <button class="d-btn" id="m-right">?</button>
+            </div>
+        </div>
+        <div id="actions">
+            <button class="a-btn" id="m-shield" style="background:#44a; border-color:#88f;">???</button>
+            <button class="a-btn" id="m-dash" style="background:#aa0; border-color:#ff0;">??</button>
+            <button class="a-btn" id="m-atk" style="width:70px; height:70px; background:#a44; border-color:#f88;">??</button>
+        </div>
+    </div>
+
     <script src="script.js"></script>
+<div id="mobile-controls">
+        <div id="dpad">
+            <div class="dpad-row"><button class="d-btn" id="m-up">?</button></div>
+            <div class="dpad-row">
+                <button class="d-btn" id="m-left">?</button>
+                <button class="d-btn" id="m-down">?</button>
+                <button class="d-btn" id="m-right">?</button>
+            </div>
+        </div>
+        <div id="actions">
+            <button class="a-btn" id="m-shield" style="background:#44a;">???</button>
+            <button class="a-btn" id="m-dash" style="background:#aa0;">??</button>
+            <button class="a-btn" id="m-atk" style="width:70px; height:70px; background:#a44;">??</button>
+        </div>
+    </div>
 </body>
 </html>
