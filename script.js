@@ -1,16 +1,66 @@
 // --- MUSIC PLAYER ---
 let bgm = new Audio();
+function playBossMusic(waveNum) {
+    bgm.pause();
+    let track = "";
+    
+    // Nivel 5: boss1 | Nivel 10: boss2 | Nivel 15+: Aleatorio
+    if (waveNum === 5) track = "boss1.aac";
+    else if (waveNum === 10) track = "boss2.aac";
+    else if (waveNum % 5 === 0) track = Math.random() < 0.5 ? "boss1.aac" : "boss2.aac";
+
+    if (track !== "") {
+        bgm.src = track;
+        bgm.play().catch(e => console.log("Haz clic para activar música"));
+        
+        // Actualiza el HUD si el elemento existe
+        const songTxt = document.getElementById('song-name');
+        if(songTxt) { songTxt.innerText = "BOSS: " + track; songTxt.style.color = "#f44"; }
+    }
+}
 bgm.loop = true;
 bgm.volume = 0.5;
 let optionsOrigin = 'MENU'; 
 
-function loadMusic(input){
-    if(input.files && input.files[0]){
-        let file = input.files[0];
-        document.getElementById('song-name').innerText = file.name.substring(0,30) + (file.name.length>30?"...":"");
-        document.getElementById('song-name').style.color = "#0f0";
-        bgm.src = URL.createObjectURL(file);
-        bgm.play();
+// --- NUEVA LÓGICA DE MÚSICA DINÁMICA ---
+function playBossMusic(waveNum) {
+    bgm.pause(); // Detener música normal
+    
+    let track = "";
+    if (waveNum === 5) {
+        track = "boss1.aac"; // Primer Jefe
+    } else if (waveNum === 10) {
+        track = "boss2.aac"; // Segundo Jefe
+    } else if (waveNum === 15) {
+        // 50% de probabilidad para el Jefe Final
+        track = Math.random() < 0.5 ? "boss1.aac" : "boss2.aac";
+    }
+
+    if (track !== "") {
+        bgm.src = track;
+        bgm.play().catch(e => console.log("Esperando interacción para sonar música..."));
+        document.getElementById('song-name').innerText = "BOSS BATTLE: " + track;
+        document.getElementById('song-name').style.color = "#f00";
+    }
+}
+
+// Modifica tu función spawnLevel para que active la música
+function spawnLevel() {
+    enemies=[]; projectiles=[]; enemyBullets=[]; structures=[]; warnings=[]; particles=[]; floatTexts=[]; decals=[]; traps=[];
+    currentBiome=BIOMES[Math.floor((wave-1)/5)%BIOMES.length];
+    document.getElementById('biome-txt').innerText=currentBiome.name;
+    
+    // SI ES NIVEL DE JEFE (Múltiplos de 5)
+    if(wave % 5 === 0) {
+        playBossMusic(wave); // <-- LLAMADA A LA MÚSICA
+        let cd=600; 
+        enemies.push({x:500,y:100,w:60,h:60,hp:(1000+wave*100),maxHp:(1000+wave*100),speed:0.8,color:currentBiome.bossColor,type:'BOSS',bossSubType:currentBiome.bossType,flash:0,range:400,abilityTimer:cd,abilityMax:cd,walkCycle:0});
+    } else {
+        // Si no es jefe, podrías poner música de mazmorra normal aquí
+        let total = 5 + Math.floor(wave*1.5);
+        for(let i=0; i<total; i++) {
+            enemies.push({x:Math.random()*1000,y:Math.random()<0.5?-50:750,w:20,h:20,hp:100, maxHp:100, speed:0.9,color:'#383',type:'GRUNT', flash:0, walkCycle:0});
+        }
     }
 }
 function toggleMusic(){ if(bgm.paused && bgm.src) bgm.play(); else bgm.pause(); }
@@ -59,6 +109,13 @@ function playSfx(type) {
 
 const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
+
+function resolveCollisions(e, nx, ny) {
+    e.x = nx; e.y = ny;
+    // Evita que el jugador o enemigos se salgan de los bordes (1000x700)
+    e.x = Math.max(0, Math.min(1000 - e.w, e.x));
+    e.y = Math.max(0, Math.min(700 - e.h, e.y));
+}
 
 // GAME MODES
 let gameMode = 'NORMAL'; 
@@ -362,15 +419,40 @@ function gameOver(){
 
 function spawnLevel() {
     enemies=[]; projectiles=[]; enemyBullets=[]; structures=[]; warnings=[]; particles=[]; floatTexts=[]; decals=[]; traps=[];
-    currentBiome=BIOMES[Math.floor((wave-1)/5)%BIOMES.length]; // 5 Levels per Biome
+    currentBiome=BIOMES[Math.floor((wave-1)/5)%BIOMES.length];
     document.getElementById('biome-txt').innerText=currentBiome.name;
     enemyPower=1+(wave*0.08); 
     document.getElementById('diff-txt').innerText="PODER ENEMIGO: "+Math.round(enemyPower*100)+"%";
+    
     startMission();
 
-    if(isCoop) {
-        if(!p1.alive && p2.alive) { p1.alive=true; p1.hp=50; floatTexts.push(new FloatText(p1.x, p1.y, "REVIVIDO!", "#fe0")); }
-        if(!p2.alive && p1.alive) { p2.alive=true; p2.hp=50; floatTexts.push(new FloatText(p2.x, p2.y, "REVIVIDO!", "#fe0")); }
+    // MÚSICA Y SPAWN DE JEFE
+    if(wave % 5 === 0) {
+        playBossMusic(wave); // <-- Esta línea activa tus archivos .aac
+        document.getElementById('boss-alert').style.display='block'; 
+        setTimeout(()=>document.getElementById('boss-alert').style.display='none', 2000);
+        
+        let cd=600; 
+        enemies.push({
+            x:500, y:100, w:60, h:60, 
+            hp:(1000+wave*100)*enemyPower, 
+            maxHp:(1000+wave*100)*enemyPower, 
+            speed:0.8, color:currentBiome.bossColor, 
+            type:'BOSS', bossSubType:currentBiome.bossType, 
+            flash:0, abilityTimer:cd, abilityMax:cd, walkCycle:0
+        });
+    } else {
+        // Enemigos normales
+        let total = (isCoop?6:5)+Math.floor(wave*1.5);
+        for(let i=0; i<total; i++) {
+            let type = Math.random()<0.3 ? 'SHOOTER' : 'GRUNT';
+            let s = getEnemyStats(type);
+            enemies.push({
+                x:Math.random()*1000, y:Math.random()<0.5?-50:750, 
+                w:s.size, h:s.size, hp:s.hp*enemyPower, maxHp:s.hp*enemyPower, 
+                speed:s.speed, color:s.color, type:type, flash:0, walkCycle:0
+            });
+        }
     }
     
     // SANDBOX: NO STRUCTURES, ONLY BOT
@@ -1092,3 +1174,44 @@ function loop() { update(); draw(); requestAnimationFrame(loop); }
 window.onload = () => { if(localStorage.getItem('pd_save_data')) document.getElementById('btn-continue').style.display='inline-block'; updatePreview(1); updatePreview(2); updateClassUI(1); updateClassUI(2); };
 window.onkeydown=e=>{if(bindingAction){let k=e.key.toLowerCase();KEYBINDS[bindingAction]=k;bindingAction=null;saveKeys();renderControls();return;}if(e.key==='Escape')togglePause();keys[e.key.toLowerCase()]=true;}
 window.onkeyup=e=>{if(!bindingAction)keys[e.key.toLowerCase()]=false;}
+// --- DETECCIÓN Y CONTROLES MÓVILES ---
+function detectMobile() {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 800;
+    
+    if (isMobile) {
+        document.getElementById('mobile-controls').style.display = 'flex';
+        // Ajustar controles táctiles
+        setupTouchBtn('m-up', 'w');
+        setupTouchBtn('m-down', 's');
+        setupTouchBtn('m-left', 'a');
+        setupTouchBtn('m-right', 'd');
+        setupTouchBtn('m-atk', 'e');
+        setupTouchBtn('m-dash', ' ');
+        setupTouchBtn('m-shield', 'r');
+        
+        // Mensaje de bienvenida móvil
+        setTimeout(() => alert("MODO MÓVIL DETECTADO\nUsa los controles en pantalla."), 500);
+    }
+}
+
+function setupTouchBtn(id, keyKey) {
+    const btn = document.getElementById(id);
+    if(!btn) return;
+    
+    // Al tocar
+    btn.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // Evitar scroll
+        keys[keyKey] = true;
+        btn.style.background = "rgba(255,255,255,0.5)";
+    }, {passive: false});
+
+    // Al soltar
+    btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        keys[keyKey] = false;
+        btn.style.background = ""; // Restaurar color
+    }, {passive: false});
+}
+
+// Ejecutar detección al inicio
+detectMobile();
