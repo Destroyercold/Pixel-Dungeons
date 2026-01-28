@@ -613,7 +613,7 @@ function update() {
 
             // Prediction & AI Behavior
             if(en.type === 'SHOOTER'){
-                if(dist < en.range - 100) { 
+                if(dist < en.range - 100) {
                     ang = Math.atan2(cy - ty, cx - tx); // Flee
                 } else if(dist < en.range) {
                     ang = Math.atan2(ty - cy, tx - cx) + Math.PI/2; // Strafe
@@ -645,9 +645,11 @@ function update() {
                     // Shoot towards actual player, not predicted spot always
                     let shootAng = Math.atan2(ty - cy, tx - cx);
                     enemyBullets.push({x:cx,y:cy,vx:Math.cos(shootAng)*5,vy:Math.sin(shootAng)*5,size:6,dmg:15*enemyPower});
-                    en.cd=en.reload;playSfx('shoot');
-                }
-            }
+                    en.cd = en.reload || 120;
+        
+        if(typeof playSfx === 'function') playSfx('shoot');
+    }
+}
             if(mv){
                 let edx = (Math.cos(ang) + sepX) * en.speed;
                 let edy = (Math.sin(ang) + sepY) * en.speed;
