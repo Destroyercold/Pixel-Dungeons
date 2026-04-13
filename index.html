@@ -6,11 +6,10 @@
     <title>Pixel Dungeon: Ultimate Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
 </head>
 <body>
-
     <div id="hud">
+
         <div style="display:flex; flex-direction:column;">
             <span>JUGADOR 1 <span id="ammo-hud" style="color:#ff0; margin-left:10px"></span></span>
             <div class="bar-container">
@@ -19,6 +18,7 @@
             </div>
             <span id="weapon-txt" style="font-size:9px; color:#0af; margin-top:5px;">ARMA: ESPADA (LVL 1)</span>
             <div id="relics-list" style="margin-top:5px; display:flex; gap:2px; flex-wrap: wrap; width: 200px;"></div>
+            <span id="skill-points-hud" style="font-size:9px; color:#fe0; margin-top:5px; display:none;">PUNTOS HABILIDAD: 0</span>
         </div>
         
         <div style="text-align:center">
@@ -46,7 +46,7 @@
     </div>
 
     <div id="game-wrapper">
-        <canvas id="game" width="1000" height="700"></canvas>
+        <canvas id="game" width="960" height="540"></canvas>
         <div id="boss-alert" class="boss-text">! ATAQUE ESPECIAL !</div>
         
         <div id="sandbox-controls">
@@ -55,7 +55,7 @@
             <button class="sb-btn" onclick="spawnLevel()">RESET BOT</button>
         </div>
 
-        <div id="main-menu" class="overlay">
+        <div id="main-menu" class="overlay" style="background:#111;">
             <h1 style="color:#a22; text-shadow:4px 4px #000; font-size:40px; margin-bottom:20px;">POLISHED<br>DUNGEON</h1>
             <h3 style="color:#fe0; font-size:12px; margin-bottom:20px;">VERSIÓN 10.0: MOBILE</h3>
             
@@ -69,7 +69,7 @@
                         <button class="arrow-btn" onclick="changeClass(1, -1)"><</button>
                         <span id="p1-class-name" style="color:#fff; margin:0 5px;">GUERRERO</span>
                         <button class="arrow-btn" onclick="changeClass(1, 1)">></button>
-                        <div id="p1-class-desc" style="font-size:8px; color:#aaa; margin-top:5px;">Espada + HP</div>
+                        <div id="p1-class-desc" style="font-size:8px; color:#aaa; margin-top:5px;">Daño+++ Dura+++. +Dmg dist.</div>
                     </div>
                 </div>
                 <div class="p-select">
@@ -81,7 +81,7 @@
                         <button class="arrow-btn" onclick="changeClass(2, -1)"><</button>
                         <span id="p2-class-name" style="color:#fff; margin:0 5px;">GUERRERO</span>
                         <button class="arrow-btn" onclick="changeClass(2, 1)">></button>
-                        <div id="p2-class-desc" style="font-size:8px; color:#aaa; margin-top:5px;">Espada + HP</div>
+                        <div id="p2-class-desc" style="font-size:8px; color:#aaa; margin-top:5px;">Daño+++ Dura+++. +Dmg dist.</div>
                     </div>
                 </div>
             </div>
@@ -93,6 +93,7 @@
                     <button class="btn" onclick="startGame(false)">JUGAR SOLO</button>
                     <button class="btn" onclick="startGame(true)">CO-OP</button>
                 </div>
+                <button class="btn" style="border-color:#f80; color:#f80;" onclick="startPvP()">?? PVP: TORNEO (1v1)</button>
                 <button class="btn" style="border-color:#fe0" onclick="openOptions()">OPCIONES</button>
                 <button class="btn" onclick="deleteGame()" style="border-color:#f44; font-size:10px; padding:10px;">BORRAR DATOS</button>
             </div>
@@ -133,7 +134,8 @@
         <div id="pause-menu" class="overlay" style="display:none;">
             <h2 style="color:#fff">JUEGO PAUSADO</h2>
             <button class="btn" onclick="togglePause()">CONTINUAR</button>
-            <button class="btn" style="border-color:#0f0" onclick="saveGame()">GUARDAR PROGRESO</button>
+            <button id="btn-skills-pause" class="btn" style="border-color:#fe0" onclick="toggleSkillsMenu(); togglePause();">ÁRBOL HABILIDADES</button>
+            <button id="btn-pause-save" class="btn" style="border-color:#0f0" onclick="saveGame()">GUARDAR PROGRESO</button>
             <button class="btn" style="border-color:#fe0" onclick="openOptions(true)">OPCIONES</button>
             <button class="btn" style="border-color:#f44" onclick="location.reload()">MENU PRINCIPAL</button>
         </div>
@@ -174,41 +176,64 @@
             </div>
             <button class="btn" style="width:500px" onclick="nextWave()">SIGUIENTE NIVEL</button>
         </div>
+
+        <div id="skills-menu" class="overlay" style="display:none; background: rgba(10,10,15,0.95); padding: 20px;">
+            <div style="display:flex; justify-content:space-between; width:100%; align-items:center; border-bottom: 2px solid #555; padding-bottom:10px; margin-bottom:10px;">
+                <h2 style="color:#fe0; margin:0;">ÁRBOL DE HABILIDADES</h2>
+                <div style="text-align:right;">
+                    <div style="color:#fff; font-size:12px;">PUNTOS DISPONIBLES</div>
+                    <div id="skill-points-reap" style="color:#fe0; font-size:24px; text-shadow: 0 0 10px #fe0;">0</div>
+                </div>
+            </div>
+            
+            <div class="skills-tree-container">
+                <div class="skill-branch" id="branch-prowler">
+                    <div class="branch-header" style="color:#a0a">PROWLER</div>
+                    <div class="skill-grid" id="grid-prowler"></div>
+                </div>
+                <div class="skill-branch" id="branch-brave">
+                    <div class="branch-header" style="color:#f33">BRAVE</div>
+                    <div class="skill-grid" id="grid-brave"></div>
+                </div>
+                <div class="skill-branch" id="branch-forager">
+                    <div class="branch-header" style="color:#3f3">FORAGER</div>
+                    <div class="skill-grid" id="grid-forager"></div>
+                </div>
+                <div class="skill-branch" id="branch-traveler">
+                    <div class="branch-header" style="color:#0af">TRAVELER</div>
+                    <div class="skill-grid" id="grid-traveler"></div>
+                </div>
+            </div>
+
+            <div id="skill-tooltip" class="skill-tooltip" style="display:none;">
+                <div id="st-name" class="st-name">Habilidad</div>
+                <div id="st-desc" class="st-desc">Descripción</div>
+                <div id="st-cost" class="st-cost">Costo: 1</div>
+                <div id="st-state" class="st-state">Bloqueado</div>
+            </div>
+
+            <button class="btn" style="width:300px; margin-top:20px;" onclick="toggleSkillsMenu()">CERRAR [CTRL]</button>
+        </div>
     </div>
     
-    <div id="inventory-hud"></div>
+    <div id="inventory-hud" style="display:none;"></div>
 
     <div id="mobile-controls">
         <div id="dpad">
-            <div class="dpad-row"><button class="d-btn" id="m-up">?</button></div>
+            <div class="dpad-row"><button class="d-btn" id="m-up">^</button></div>
             <div class="dpad-row">
-                <button class="d-btn" id="m-left">?</button>
-                <button class="d-btn" id="m-down">?</button>
-                <button class="d-btn" id="m-right">?</button>
+                <button class="d-btn" id="m-left"><</button>
+                <button class="d-btn" id="m-down">v</button>
+                <button class="d-btn" id="m-right">></button>
             </div>
         </div>
         <div id="actions">
-            <button class="a-btn" id="m-shield" style="background:#44a; border-color:#88f;">???</button>
-            <button class="a-btn" id="m-dash" style="background:#aa0; border-color:#ff0;">??</button>
-            <button class="a-btn" id="m-atk" style="width:70px; height:70px; background:#a44; border-color:#f88;">??</button>
+            <button class="a-btn" id="m-shield" style="background:#44a; border-color:#88f;">R</button>
+            <button class="a-btn" id="m-dash" style="background:#aa0; border-color:#ff0;">---</button>
+            <button class="a-btn" id="m-atk" style="width:70px; height:70px; background:#a44; border-color:#f88;">E</button>
         </div>
     </div>
 
     <script src="script.js"></script>
-<div id="mobile-controls">
-        <div id="dpad">
-            <div class="dpad-row"><button class="d-btn" id="m-up">?</button></div>
-            <div class="dpad-row">
-                <button class="d-btn" id="m-left">?</button>
-                <button class="d-btn" id="m-down">?</button>
-                <button class="d-btn" id="m-right">?</button>
-            </div>
-        </div>
-        <div id="actions">
-            <button class="a-btn" id="m-shield" style="background:#44a;">???</button>
-            <button class="a-btn" id="m-dash" style="background:#aa0;">??</button>
-            <button class="a-btn" id="m-atk" style="width:70px; height:70px; background:#a44;">??</button>
-        </div>
-    </div>
 </body>
 </html>
