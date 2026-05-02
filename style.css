@@ -1,27 +1,86 @@
-/* style.css - ACTUALIZADO PARA MOBILE */
+/* style.css - PIXEL DUNGEON: ULTIMATE EDITION (MOBILE-FIRST PRO) */
+
+/* ==========================================================================
+   1. BASE Y RESET
+   ========================================================================== */
 body { 
-    background: #050505; color: #eee; font-family: 'Press Start 2P', cursive; 
-    display: flex; flex-direction: column; align-items: center; margin: 0; overflow: hidden; 
-    image-rendering: pixelated; user-select: none;
-    -webkit-user-select: none; touch-action: none; /* Evita zoom y scroll en móviles */
+    background: #050505; 
+    color: #eee; 
+    font-family: 'Press Start 2P', cursive; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    margin: 0; 
+    overflow: hidden; 
+    image-rendering: pixelated; 
+    /* Prevención de selección y gestos nativos (zoom/scroll) en móviles */
+    user-select: none;
+    -webkit-user-select: none; 
+    touch-action: none; 
 }
 
+/* ==========================================================================
+   2. INTERFAZ PRINCIPAL (HUD)
+   ========================================================================== */
 #hud { 
-    width: 960px; background: #1a1a1a; padding: 15px; display: none; justify-content: space-between; 
-    border: 4px solid #666; margin-bottom: 5px; font-size: 10px; box-sizing: border-box; position: relative;
+    width: 960px; 
+    background: #1a1a1a; 
+    padding: 10px 15px; 
+    display: none; 
+    justify-content: space-between; 
+    align-items: flex-start;
+    border: 4px solid #666; 
+    margin-bottom: 5px; 
+    font-size: 10px; 
+    box-sizing: border-box; 
+    position: relative;
     z-index: 10;
 }
 
-.music-hud-clickable:hover {
-    background-color: rgba(0, 170, 255, 0.9) !important;
-    border-color: #fff !important;
-    transform: scale(1.05);
+#hud-left, #hud-right { flex: 1; }
+#hud-center { flex: 1; text-align: center; }
+#hud-right { text-align: right; }
+
+.bar-container { 
+    width: 200px; 
+    height: 15px; 
+    background: #000; 
+    border: 2px solid #fff; 
+    position: relative; 
+    margin-top: 5px; 
+    overflow: visible; 
+}
+.hp-fill { 
+    height: 100%; 
+    background: #e22; 
+    transition: width 0.1s, box-shadow 0.2s, background-color 0.2s; 
+}
+.arm-fill { 
+    height: 100%; 
+    background: #aaa; 
+    transition: width 0.1s; 
+    position: absolute; 
+    top:0; 
+    left:0; 
+    mix-blend-mode: normal; 
 }
 
-.bar-container { width: 200px; height: 15px; background: #000; border: 2px solid #fff; position: relative; margin-top: 5px; overflow: visible; }
-.hp-fill { height: 100%; background: #e22; transition: width 0.1s, box-shadow 0.2s, background-color 0.2s; }
-.arm-fill { height: 100%; background: #aaa; transition: width 0.1s; position: absolute; top:0; left:0; mix-blend-mode: normal; }
+#p2-hud-area { display: none; } 
+.p2-bar { border-color: #f44; }
+.p2-fill { background: #f44; }
 
+#madman-timer { 
+    position: absolute; 
+    top: 40px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    font-size: 20px; 
+    color: #f0f; 
+    display: none; 
+    text-shadow: 2px 2px #000; 
+}
+
+/* Animaciones de Habilidades / Estados */
 @keyframes flame-warrior { 0% { box-shadow: 0 0 5px #f00, inset 0 0 5px #ff0; } 100% { box-shadow: 0 0 20px #f00, 0 0 15px #ff0, inset 0 0 15px #ff0; } }
 @keyframes flame-scout { 0% { box-shadow: 0 0 5px #0ff, inset 0 0 5px #fff; } 100% { box-shadow: 0 0 20px #0ff, 0 0 15px #fff, inset 0 0 15px #fff; } }
 @keyframes flame-tank { 0% { box-shadow: 0 0 5px #0f0, inset 0 0 5px #afa; } 100% { box-shadow: 0 0 20px #0f0, 0 0 15px #afa, inset 0 0 15px #afa; } }
@@ -32,19 +91,92 @@ body {
 .flame-tank { animation: flame-tank 0.3s infinite alternate; background-color: #3f3 !important; }
 .flame-marksman { animation: flame-marksman 0.3s infinite alternate; background-color: #f3f !important; }
 
-#p2-hud-area { text-align: right; display: none; } 
-.p2-bar { border-color: #f44; }
-.p2-fill { background: #f44; }
+/* ==========================================================================
+   3. ÁREA DE JUEGO Y CANVAS
+   ========================================================================== */
+#game-wrapper { 
+    position: relative; 
+    box-shadow: 0 0 50px #000; 
+    cursor: crosshair; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+canvas { 
+    background: #121212; 
+    display: block; 
+    border: 4px solid #444; 
+}
 
-#madman-timer { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); font-size: 20px; color: #f0f; display: none; text-shadow: 2px 2px #000; }
+.boss-text { 
+    position: absolute; 
+    color: #f00; 
+    font-size: 20px; 
+    text-shadow: 2px 2px #000; 
+    pointer-events: none; 
+    display: none; 
+    width: 100%; 
+    text-align: center; 
+    top: 100px; 
+    z-index: 50;
+}
+.diff-text { color: #f44; font-size: 8px; margin-top: 5px; }
 
-#game-wrapper { position: relative; box-shadow: 0 0 50px #000; cursor: crosshair; }
-canvas { background: #121212; display: block; border: 4px solid #444; }
+#mission-hud { 
+    position: absolute; 
+    bottom: 80px; 
+    left: 0; 
+    width: 100%; 
+    text-align: center; 
+    color: #fff; 
+    font-size: 12px; 
+    background: rgba(34,34,34,0.8); 
+    padding: 10px 0; 
+    border: 2px solid #444; 
+    display: none; 
+}
+.mission-complete { color: #0f0 !important; text-shadow: 0 0 5px #0f0; }
 
+#sandbox-controls { 
+    position: absolute; 
+    top: 80px; 
+    right: 20px; 
+    width: 150px; 
+    text-align: right; 
+    display: none; 
+    z-index: 20;
+}
+.sb-btn { 
+    background: #000; 
+    border: 1px solid #0ff; 
+    color: #0ff; 
+    font-family: inherit; 
+    font-size: 10px; 
+    padding: 5px; 
+    cursor: pointer; 
+    margin-bottom: 5px; 
+    width: 100%; 
+}
+.sb-active { background: #0aa; color: #fff; border-color: #fff; }
+
+/* ==========================================================================
+   4. INVENTARIO (Solo PC/Tablets grandes)
+   ========================================================================== */
 #inventory-hud {
-    width: 960px; min-height: 60px; background: #111; border: 4px solid #444; border-top: none;
-    display: none; align-items: center; justify-content: center; gap: 10px; padding: 10px;
-    flex-wrap: wrap; box-sizing: border-box; z-index: 10; position: relative;
+    width: 960px; 
+    min-height: 60px; 
+    background: #111; 
+    border: 4px solid #444; 
+    border-top: none;
+    display: none; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 10px; 
+    padding: 10px;
+    flex-wrap: wrap; 
+    box-sizing: border-box; 
+    z-index: 10; 
+    position: relative;
 }
 .inv-slot {
     width: 50px; height: 50px; border: 2px solid #666; background: #222; 
@@ -56,13 +188,56 @@ canvas { background: #121212; display: block; border: 4px solid #444; }
 .inv-key { position: absolute; top: 2px; left: 2px; color: #555; font-size: 6px; }
 .ench-indicator { width: 6px; height: 6px; background: #a0a; border-radius: 50%; position: absolute; bottom: 2px; right: 2px; box-shadow: 0 0 5px #f0f; display: none; }
 
+/* ==========================================================================
+   5. MENÚS Y SUPERPOSICIONES (OVERLAYS)
+   ========================================================================== */
 .overlay { 
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(17,17,17,1); display: flex; flex-direction: column; 
+    background: rgba(17,17,17,0.95); display: flex; flex-direction: column; 
     align-items: center; justify-content: center; z-index: 100;
 }
 
 #main-menu { background: #111; }
+
+.char-select { display: flex; gap: 40px; margin-bottom: 30px; background: #222; padding: 20px; border: 2px solid #555; border-radius: 10px; }
+.p-select { text-align: center; width: 200px; }
+.skin-preview { width: 60px; height: 60px; border: 4px solid #fff; margin: 10px auto; display: inline-block; position: relative; }
+.arrow-btn { background: #444; border: 1px solid #888; color: #fff; cursor: pointer; padding: 5px 10px; font-family: inherit; }
+.class-display { color: #fe0; font-size: 10px; margin-top: 10px; border-top: 1px solid #444; padding-top: 10px; }
+
+.menu-btn-group { display: flex; flex-direction: column; gap: 10px; width: 350px; }
+.btn { background: #222; color: #fff; padding: 15px; border: 4px solid #fff; cursor: pointer; font-family: 'Press Start 2P'; font-size: 12px; text-transform: uppercase; width: 100%; transition: 0.1s;}
+.btn-small { width: auto; padding: 10px; font-size: 10px; }
+.btn:hover { background: #fff; color: #000; transform: translateY(-2px); }
+.btn-refresh { width: auto; font-size: 10px; padding: 10px; border-color: #f0f; color: #f0f; margin-bottom: 10px;} 
+
+/* Tienda */
+.shop-container { display: flex; width: 900px; height: 400px; gap: 20px; }
+.shop-col { flex: 1; border: 2px solid #555; padding: 15px; background: #151515; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.shop-title { color: #fe0; border-bottom: 2px solid #555; padding-bottom: 10px; margin-bottom: 5px; text-align: center; font-size: 12px; }
+.shop-item { background: #222; border: 1px solid #444; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; transition: 0.2s; position: relative; min-height: 50px; justify-content: center;}
+.shop-item:hover { background: #333; border-color: #fff; box-shadow: 0 4px 10px #000; }
+.shop-item.purchased { opacity: 0.5; pointer-events: none; border-color: #444; background: #111; }
+.shop-item.sell-mode { border-color: #f44; }
+.shop-item.sell-mode:hover { background: #422; box-shadow: 0 0 10px #f00; }
+.shop-item.cant-sell { opacity: 0.5; cursor: not-allowed; border-color: #444; }
+.relic-card { border-color: #0af; }
+.relic-desc { font-size: 8px; color: #aaa; text-align: center; margin: 2px 0; }
+
+/* Opciones y Controles PC */
+.opt-row { display: flex; justify-content: space-between; width: 600px; margin: 5px 0; font-size: 12px; align-items: center; }
+.opt-val { color: #fe0; cursor: pointer; }
+.key-btn { background: #333; border: 2px solid #666; color: #fff; padding: 5px 10px; font-family: inherit; font-size: 10px; cursor: pointer; width: 100px; text-align: center;}
+.key-btn:hover { border-color: #fff; background: #444; }
+.key-btn.binding { background: #a00; border-color: #f00; color: #fff; animation: blink 0.5s infinite; }
+@keyframes blink { 0% {opacity:1;} 50% {opacity:0.5;} 100% {opacity:1;} }
+.controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 800px; margin-top: 20px; max-height: 300px; overflow-y: auto; }
+.control-group { border: 1px solid #444; padding: 10px; background: #111; }
+
+/* Música */
+.music-section { border: 1px solid #0af; padding: 10px; margin-bottom: 10px; width: 600px; text-align: center; background: #051520; }
+input[type=range] { accent-color: #0af; }
+.music-hud-clickable:hover { background-color: rgba(0, 170, 255, 0.9) !important; border-color: #fff !important; transform: scale(1.05); }
 
 #ingame-music-player {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -82,95 +257,13 @@ canvas { background: #121212; display: block; border: 4px solid #444; }
 #seek-bar { flex: 1; accent-color: #0af; cursor: pointer; }
 .vol-controls { display: flex; align-items: center; gap: 10px; justify-content: center; margin-top:10px; }
 
-.char-select { display: flex; gap: 40px; margin-bottom: 30px; background: #222; padding: 20px; border: 2px solid #555; border-radius: 10px; }
-.p-select { text-align: center; width: 200px; }
-.skin-preview { width: 60px; height: 60px; border: 4px solid #fff; margin: 10px auto; display: inline-block; position: relative; }
-.arrow-btn { background: #444; border: 1px solid #888; color: #fff; cursor: pointer; padding: 5px 10px; font-family: inherit; }
-.class-display { color: #fe0; font-size: 10px; margin-top: 10px; border-top: 1px solid #444; padding-top: 10px; }
-
-.menu-btn-group { display: flex; flex-direction: column; gap: 10px; width: 350px; }
-.btn { background: #222; color: #fff; padding: 15px; border: 4px solid #fff; cursor: pointer; font-family: 'Press Start 2P'; font-size: 12px; text-transform: uppercase; width: 100%; transition: 0.1s;}
-.btn-small { width: auto; padding: 10px; font-size: 10px; }
-.btn:hover { background: #fff; color: #000; transform: translateY(-2px); }
-.btn-refresh { width: auto; font-size: 10px; padding: 10px; border-color: #f0f; color: #f0f; margin-bottom: 10px;} 
-
-.shop-container { display: flex; width: 900px; height: 400px; gap: 20px; }
-.shop-col { flex: 1; border: 2px solid #555; padding: 15px; background: #151515; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-.shop-title { color: #fe0; border-bottom: 2px solid #555; padding-bottom: 10px; margin-bottom: 5px; text-align: center; font-size: 12px; }
-.shop-item { background: #222; border: 1px solid #444; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; transition: 0.2s; position: relative; min-height: 50px; justify-content: center;}
-.shop-item:hover { background: #333; border-color: #fff; box-shadow: 0 4px 10px #000; }
-.shop-item.purchased { opacity: 0.5; pointer-events: none; border-color: #444; background: #111; }
-.shop-item.sell-mode { border-color: #f44; }
-.shop-item.sell-mode:hover { background: #422; box-shadow: 0 0 10px #f00; }
-.shop-item.cant-sell { opacity: 0.5; cursor: not-allowed; border-color: #444; }
-.relic-card { border-color: #0af; }
-.relic-desc { font-size: 8px; color: #aaa; text-align: center; margin: 2px 0; }
-
-.boss-text { position: absolute; color: #f00; font-size: 20px; text-shadow: 2px 2px #000; pointer-events: none; display: none; width: 100%; text-align: center; top: 100px; z-index: 50;}
-.diff-text { color: #f44; font-size: 8px; margin-top: 5px; }
-
-#mission-hud { position: absolute; bottom: 80px; left: 0; width: 100%; text-align: center; color: #fff; font-size: 12px; background: rgba(34,34,34,0.8); padding: 10px 0; border: 2px solid #444; display: none; }
-.mission-complete { color: #0f0 !important; text-shadow: 0 0 5px #0f0; }
-
-.opt-row { display: flex; justify-content: space-between; width: 600px; margin: 5px 0; font-size: 12px; align-items: center; }
-.opt-val { color: #fe0; cursor: pointer; }
-.key-btn { background: #333; border: 2px solid #666; color: #fff; padding: 5px 10px; font-family: inherit; font-size: 10px; cursor: pointer; width: 100px; text-align: center;}
-.key-btn:hover { border-color: #fff; background: #444; }
-.key-btn.binding { background: #a00; border-color: #f00; color: #fff; animation: blink 0.5s infinite; }
-@keyframes blink { 0% {opacity:1;} 50% {opacity:0.5;} 100% {opacity:1;} }
-.controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 800px; margin-top: 20px; max-height: 300px; overflow-y: auto; }
-.control-group { border: 1px solid #444; padding: 10px; background: #111; }
-
-#sandbox-controls { position: absolute; top: 80px; right: 20px; width: 150px; text-align: right; display: none; z-index: 20;}
-.sb-btn { background: #000; border: 1px solid #0ff; color: #0ff; font-family: inherit; font-size: 10px; padding: 5px; cursor: pointer; margin-bottom: 5px; width: 100%; }
-
-#enchant-menu { display: none; }
+/* Encantamientos y Habilidades */
 .enchant-cards { display: flex; gap: 20px; justify-content: center; width: 100%; margin-top: 20px; }
 .enchant-card { width: 200px; height: 250px; background: #150515; border: 2px solid #a0a; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.2s; text-align: center; }
 .enchant-card:hover { transform: scale(1.05); background: #2a0a2a; border-color: #f0f; box-shadow: 0 0 20px #f0f; }
 .ench-title { color: #f0f; font-size: 14px; margin-bottom: 10px; }
 .ench-desc { color: #ccc; font-size: 10px; line-height: 1.5; }
 .ench-type { color: #666; font-size: 8px; margin-top: auto; }
-
-.music-section { border: 1px solid #0af; padding: 10px; margin-bottom: 10px; width: 600px; text-align: center; background: #051520; }
-input[type=range] { accent-color: #0af; }
-
-/* NUEVO SISTEMA MOBILE FLUIDO */
-#mobile-controls {
-    display: none; 
-    position: fixed;
-    bottom: 0; left: 0; width: 100%; height: 50vh;
-    z-index: 200; pointer-events: none;
-    opacity: 0.6; /* Controlado por JS */
-    transition: opacity 0.2s;
-}
-
-#joystick-zone {
-    position: absolute; left: 5%; bottom: 10%; width: 150px; height: 150px; pointer-events: auto;
-}
-#joystick-base {
-    width: 120px; height: 120px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%;
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center;
-}
-#joystick-stick {
-    width: 50px; height: 50px; background: rgba(255,255,255,0.6); border-radius: 50%; position: relative; box-shadow: 0 0 10px rgba(0,0,0,0.5);
-}
-
-#action-zone {
-    position: absolute; right: 5%; bottom: 10%; pointer-events: auto;
-    display: grid; grid-template-columns: 60px 60px; grid-gap: 15px; align-items: end; justify-items: center;
-}
-
-.m-btn {
-    width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.5);
-    color: #fff; font-size: 24px; pointer-events: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.5); text-shadow: 2px 2px #000;
-}
-.m-btn:active { background: rgba(255,255,255,0.6); transform: scale(0.9); }
-.m-btn-small { width: 45px; height: 45px; font-size: 16px; margin-bottom: 20px;}
-
-#m-pause {
-    position: absolute; top: -40vh; right: 5%; width: 40px; height: 40px; pointer-events: auto; background: rgba(0,0,0,0.5); border: 2px solid #fff; color: #fff; border-radius: 5px; font-size: 16px;
-}
 
 .skills-tree-container { display: flex; gap: 15px; width: 100%; height: calc(100% - 100px); overflow-x: auto; padding-bottom: 10px; }
 .skill-branch { flex: 1; min-width: 220px; border: 2px solid #444; background: rgba(20,20,30,0.5); padding: 10px; display: flex; flex-direction: column; align-items: center; }
@@ -191,19 +284,208 @@ input[type=range] { accent-color: #0af; }
 .st-cost { color: #aaa; }
 .st-state { margin-top: 5px; font-weight: bold; }
 
-@media (max-width: 1024px) {
-    body { overflow: hidden; background: #000; }
-    #hud { width: 100%; padding: 5px; font-size: 8px; }
-    #inventory-hud { display: none !important; } /* Oculto en móvil para no tapar, usamos el botón Swap */
-    
-    #game-wrapper { width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: flex-start; align-items:center; }
-    canvas { width: 100vw; height: auto; max-height: 55vh; object-fit: contain; border-radius: 5px; margin-top:5px; }
 
-    .char-select { flex-direction: column; gap: 10px; padding: 10px; }
-    .shop-container { flex-direction: column; width: 95vw; height: 60vh; }
-    .btn { padding: 10px; }
-    h1 { font-size: 20px !important; }
-    #ingame-music-player { width: 90vw; height: 50vh; }
-    .playlist-col { width: 100%; }
-    .opt-row { width: 95vw !important; }
+/* ==========================================================================
+   6. SISTEMA MOBILE FLUIDO (ESTILO CONSOLA)
+   ========================================================================== */
+#mobile-controls {
+    display: none; 
+    position: fixed;
+    bottom: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; /* Ocupa todo para el toque, pero controles abajo */
+    z-index: 200; 
+    pointer-events: none; /* Deja pasar clicks al canvas donde no hay botones */
+    opacity: 0.6; /* Controlable desde opciones */
+    transition: opacity 0.2s;
+}
+
+#joystick-zone {
+    position: absolute; 
+    left: 8%; 
+    bottom: 15%; 
+    width: 160px; 
+    height: 160px; 
+    pointer-events: auto;
+}
+#joystick-base {
+    width: 130px; 
+    height: 130px; 
+    background: rgba(20, 20, 20, 0.4); 
+    border: 3px solid rgba(255,255,255,0.2); 
+    border-radius: 50%;
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+}
+#joystick-stick {
+    width: 55px; 
+    height: 55px; 
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(150,150,150,0.8) 100%);
+    border-radius: 50%; 
+    position: relative; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5), inset 0 -3px 5px rgba(0,0,0,0.3);
+}
+
+#action-zone {
+    position: absolute; 
+    right: 5%; 
+    bottom: 12%; 
+    pointer-events: auto;
+    display: grid; 
+    grid-template-columns: 70px 70px; 
+    grid-gap: 15px; 
+    align-items: end; 
+    justify-items: center;
+}
+
+/* Botones principales de acción */
+.m-btn {
+    width: 65px; 
+    height: 65px; 
+    border-radius: 50%; 
+    background: rgba(40,40,40,0.6); 
+    border: 3px solid rgba(255,255,255,0.5);
+    color: #fff; 
+    font-size: 26px; /* Para los emojis */
+    pointer-events: auto; 
+    box-shadow: 0 6px 10px rgba(0,0,0,0.6), inset 0 2px 5px rgba(255,255,255,0.3); 
+    text-shadow: 2px 2px 4px #000;
+    transition: transform 0.1s, background 0.1s, box-shadow 0.1s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.m-btn:active { 
+    background: rgba(200,200,200,0.6) !important; 
+    transform: scale(0.90) translateY(4px); 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.8), inset 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Botones secundarios (Swap, Lock) */
+.m-btn-small { 
+    width: 45px; 
+    height: 45px; 
+    font-size: 18px; 
+    margin-bottom: 20px;
+}
+
+#m-pause {
+    position: absolute; 
+    top: 5%; 
+    right: 5%; 
+    width: 40px; 
+    height: 40px; 
+    pointer-events: auto; 
+    background: rgba(20,20,20,0.6); 
+    border: 2px solid #fff; 
+    color: #fff; 
+    border-radius: 8px; 
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+}
+#m-pause:active { transform: scale(0.9); }
+
+/* Clases para modo zurdo/diestro opcional */
+#mobile-controls.flipped #joystick-zone { left: auto; right: 8%; }
+#mobile-controls.flipped #action-zone { right: auto; left: 5%; }
+#mobile-controls.flipped #m-pause { right: auto; left: 5%; }
+
+
+/* ==========================================================================
+   7. MEDIA QUERIES (OPTIMIZACIÓN Y FORZADO LANDSCAPE)
+   ========================================================================== */
+
+/* A. Forzar Landscape si el teléfono está en Portrait (El más importante) */
+@media screen and (orientation: portrait) and (max-width: 1024px) {
+    body {
+        transform: rotate(90deg);
+        transform-origin: left top;
+        width: 100vh;
+        height: 100vw;
+        overflow: hidden;
+        position: absolute;
+        top: 100%;
+        left: 0;
+    }
+    
+    #game-wrapper {
+        width: 100vh;
+        height: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    canvas {
+        max-width: 100vh;
+        max-height: 100vw;
+        object-fit: contain;
+    }
+    
+    #hud { 
+        width: 100vh; 
+        padding: 5px 15px; 
+        font-size: 8px; 
+    }
+    
+    #inventory-hud { display: none !important; }
+    
+    .char-select { flex-direction: row; gap: 10px; padding: 10px; }
+    .shop-container { flex-direction: row; width: 90vh; height: 65vw; }
+    .overlay h1 { font-size: 24px !important; }
+    .btn { padding: 10px; font-size: 10px;}
+    
+    #ingame-music-player { width: 80vh; height: 70vw; }
+    .opt-row { width: 90vh !important; }
+}
+
+/* B. Ajustes para Landscape nativo (Teléfono ya volteado) */
+@media screen and (orientation: landscape) and (max-height: 600px) {
+    #hud { 
+        width: 100vw; 
+        padding: 5px 15px; 
+        font-size: 8px; 
+    }
+    
+    #inventory-hud { display: none !important; }
+    
+    #game-wrapper { 
+        width: 100vw; 
+        height: 100vh; 
+    }
+    
+    canvas { 
+        max-width: 100vw; 
+        max-height: 100vh; 
+        object-fit: contain; 
+    }
+    
+    .char-select { flex-direction: row; gap: 10px; padding: 10px; }
+    .shop-container { width: 90vw; height: 70vh; }
+    .overlay h1 { font-size: 24px !important; }
+    .btn { padding: 8px; font-size: 10px;}
+    
+    #ingame-music-player { width: 80vw; height: 80vh; }
+    .opt-row { width: 90vw !important; }
+}
+
+/* Ajustes de control móvil para pantallas muy pequeñas */
+@media (max-width: 700px), (max-height: 400px) {
+    #joystick-zone { width: 120px; height: 120px; bottom: 5%; }
+    #joystick-base { width: 100px; height: 100px; }
+    #joystick-stick { width: 40px; height: 40px; }
+    
+    #action-zone { grid-template-columns: 55px 55px; grid-gap: 10px; bottom: 5%; }
+    .m-btn { width: 55px; height: 55px; font-size: 20px; }
+    .m-btn-small { width: 35px; height: 35px; font-size: 14px; }
 }

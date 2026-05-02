@@ -9,10 +9,9 @@
 </head>
 <body>
     <div id="hud">
-
-        <div style="display:flex; flex-direction:column;">
+        <div id="hud-left" style="display:flex; flex-direction:column;">
             <span>JUGADOR 1 <span id="ammo-hud" style="color:#ff0; margin-left:10px"></span></span>
-            <div class="bar-container">
+            <div class="bar-container" id="hp-bar-area">
                 <div id="hp-bar" class="hp-fill" style="width:100%"></div>
                 <div id="arm-bar" class="arm-fill" style="width:0%"></div>
             </div>
@@ -21,7 +20,7 @@
             <span id="skill-points-hud" style="font-size:9px; color:#fe0; margin-top:5px; display:none;">PUNTOS HABILIDAD: 0</span>
         </div>
         
-        <div style="text-align:center">
+        <div id="hud-center" style="text-align:center">
             <span style="color:#888">BIOMA</span><br>
             <span id="biome-txt" style="color:#0af">CRIPTA</span>
             <div id="diff-txt" class="diff-text">PODER ENEMIGO: 100%</div>
@@ -29,7 +28,7 @@
             <div id="madman-timer">TIEMPO: 60</div>
         </div>
 
-        <div style="text-align:right">
+        <div id="hud-right" style="text-align:right">
             <span>ORO: <span id="gold-txt" style="color:#ff0">0</span></span><br><br>
             <span>NIVEL: <span id="wave-txt">1</span></span>
             <div id="p2-hud-area" style="margin-top: 10px;">
@@ -57,7 +56,7 @@
 
         <div id="main-menu" class="overlay" style="background:#111;">
             <h1 style="color:#a22; text-shadow:4px 4px #000; font-size:40px; margin-bottom:20px;">PIXEL DUNGEON</h1>
-            <h3 style="color:#fe0; font-size:12px; margin-bottom:20px;">VERSIÓN 24.0: ASTERION RAID</h3>
+            <h3 style="color:#fe0; font-size:12px; margin-bottom:20px;">VERSIÓN 25.0: RAID BOSS</h3>
             
             <div class="char-select">
                 <div class="p-select">
@@ -110,12 +109,16 @@
 
             <div style="display: flex; gap: 20px; margin-bottom: 10px;">
                 <div class="opt-row" style="width: auto; gap: 10px;"><span>SFX:</span><span id="opt-sfx" class="opt-val" onclick="toggleOpt('sfx')">ON</span></div>
-                <div class="opt-row" style="width: auto; gap: 10px;"><span>PARTICULAS:</span><span id="opt-part" class="opt-val" onclick="toggleOpt('part')">ON</span></div>
+                <div class="opt-row" style="width: auto; gap: 10px;"><span>PARTÍCULAS:</span><span id="opt-part" class="opt-val" onclick="toggleOpt('part')">ON</span></div>
+            </div>
+            
+            <div class="opt-row" style="width: 300px; justify-content:center; margin-bottom: 10px;">
+                <span style="font-size:8px; margin-right:10px;">OPACIDAD MÓVIL:</span>
+                <input type="range" id="mobile-opacity-slider" min="0.1" max="1" step="0.1" value="0.6" onchange="updateMobileOpacity(this.value)">
             </div>
             
             <div class="opt-row" style="width: 300px; justify-content:center; margin-bottom: 20px;">
-                <span style="font-size:8px; margin-right:10px;">OPACIDAD MÓVIL:</span>
-                <input type="range" id="mobile-opacity-slider" min="0.1" max="1" step="0.1" value="0.6" onchange="updateMobileOpacity(this.value)">
+                <button class="btn btn-small" style="border-color:#0af" onclick="swapMobileHUD()">INVERTIR CONTROLES (ZURDO)</button>
             </div>
 
             <h3 style="margin-bottom: 0;">CONTROLES PC</h3>
@@ -146,7 +149,7 @@
             <button class="btn" onclick="location.reload()">REINTENTAR</button>
         </div>
 
-        <div id="enchant-menu" class="overlay">
+        <div id="enchant-menu" class="overlay" style="display:none;">
             <h2 style="color:#f0f; text-shadow: 0 0 10px #a0a;">MESA DE ENCANTAMIENTOS</h2>
             <p style="color:#fff; font-size:10px;">ELIGE UN PODER PARA: <span id="ench-weapon-name" style="color:#fe0">ARMA</span></p>
             <div class="enchant-cards" id="enchant-container"></div>
@@ -231,7 +234,7 @@
             
             <!-- Botones Principales -->
             <button class="m-btn" id="m-shield" style="background:#44a; border-color:#88f; grid-column: 1;">???</button>
-            <button class="m-btn" id="m-spec" style="background:#088; border-color:#0cc; grid-column: 2;">??</button>
+            <button class="m-btn" id="m-spec" style="background:#088; border-color:#0cc; grid-column: 2;">?</button>
             <button class="m-btn" id="m-dash" style="background:#aa0; border-color:#ff0; grid-column: 1;">??</button>
             <button class="m-btn" id="m-atk" style="background:#a44; border-color:#f88; grid-column: 2; transform: scale(1.2);">??</button>
         </div>

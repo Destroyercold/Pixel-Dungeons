@@ -1,4 +1,4 @@
-/* script.js - ACTUALIZADO: IA MODO Clon de sombra (RAID BOSS) + CONTROLES MOVILES PRO */
+/* script.js - ACTUALIZADO: IA MODO Clon de sombra (RAID BOSS) + CONTROLES MOVILES Y RENDIMIENTO */
 
 // --- PIXEL DUNGEON: ULTIMATE EDITION V25.0 ---
 
@@ -17,6 +17,7 @@ let bgm = new Audio();
 let currentTrackIndex = 0;
 let isBossMusicActive = false;
 let isMusicPlayerOpen = false; 
+let isMobile = false; // Variable global para saber si estamos en movil
 
 bgm.src = MUSIC_PLAYLIST[0].src;
 bgm.loop = false; 
@@ -99,21 +100,12 @@ const SKILL_TREE_DATA = {
 };
 
 window.addEventListener('load', () => {
-    document.body.style.margin = "0";
-    document.body.style.padding = "0";
-    document.body.style.width = "100vw";
-    document.body.style.height = "100vh";
-    document.body.style.display = "flex";
-    document.body.style.justifyContent = "center";
-    document.body.style.alignItems = "center";
-    document.body.style.backgroundColor = "#111"; 
-    document.body.style.overflow = "hidden"; 
+    isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 800;
 
     const c = document.getElementById('game');
     if(c) { 
         c.width = GAME_W; 
         c.height = GAME_H; 
-        c.style.boxShadow = "0 0 50px rgba(0,0,0,0.8)"; 
     }
 
     createMusicHUD();
@@ -124,7 +116,7 @@ window.addEventListener('load', () => {
     organizeMainMenu(); 
     
     const mHud = document.getElementById('mission-hud');
-    if(mHud) {
+    if(mHud && !isMobile) {
         mHud.style.top = 'auto'; mHud.style.left = 'auto'; mHud.style.bottom = '100px'; mHud.style.right = '10px'; mHud.style.textAlign = 'right'; mHud.style.position = 'absolute';
     }
 
@@ -282,6 +274,27 @@ function updateMobileOpacity(val) {
     if(mc) mc.style.opacity = val;
 }
 
+function updateHUDLayout() {
+    let hudLeft = document.getElementById('hud-left');
+    let hudRight = document.getElementById('hud-right');
+    let hpBarArea = document.getElementById('hp-bar-area');
+    
+    if(isMobile) {
+        if(hudLeft && hudRight && hpBarArea) {
+             hudRight.appendChild(hpBarArea);
+        }
+    } else {
+        if(hudLeft && hudRight && hpBarArea) {
+             hudLeft.appendChild(hpBarArea);
+        }
+    }
+}
+
+function swapMobileHUD() {
+    const controls = document.getElementById('mobile-controls');
+    controls.classList.toggle('flipped');
+}
+
 function openBossRushMenu() {
     document.getElementById('main-menu').style.display = 'none';
     let overlay = document.getElementById('boss-rush-menu');
@@ -347,7 +360,7 @@ function startGame(coop) {
     if (bgm.paused || bgm.src.includes('menu.aac')) playTrack(0); 
 
     document.getElementById('hud').style.display = 'flex';
-    document.getElementById('inventory-hud').style.display = 'flex';
+    if(!isMobile) document.getElementById('inventory-hud').style.display = 'flex';
 
     isCoop = coop;
     state = 'STARTING'; 
@@ -389,7 +402,7 @@ function startGame(coop) {
     if(gameMode === 'MADMAN') { madmanTimer = 3600; document.getElementById('madman-timer').style.display = 'block'; } 
     else document.getElementById('madman-timer').style.display = 'none';
 
-    document.getElementById('sandbox-controls').style.display = (gameMode === 'SANDBOX') ? 'block' : 'none';
+    document.getElementById('sandbox-controls').style.display = (gameMode === 'SANDBOX' && !isMobile) ? 'block' : 'none';
     if(gameMode === 'SANDBOX') gold = 999999;
 
     document.getElementById('main-menu').style.display='none';
@@ -406,7 +419,7 @@ function startGame(coop) {
     state = 'PLAYING';
     
     if(!window.isLooping) { window.isLooping = true; loop(); }
-    updateRelicUI(); updateInventoryUI();
+    updateRelicUI(); updateInventoryUI(); updateHUDLayout();
 }
 
 function startPvP() { gameMode = 'PVP'; startGame(true); }
@@ -509,8 +522,10 @@ function toggleGameMode(){
 function toggleSandboxBot(){
     sandboxBotAggro = !sandboxBotAggro;
     let b = document.getElementById('btn-bot-aggro');
-    b.innerText = sandboxBotAggro ? "BOT: AGRESIVO" : "BOT: PASIVO";
-    if(sandboxBotAggro) b.classList.add('sb-active'); else b.classList.remove('sb-active');
+    if(b){
+        b.innerText = sandboxBotAggro ? "BOT: AGRESIVO" : "BOT: PASIVO";
+        if(sandboxBotAggro) b.classList.add('sb-active'); else b.classList.remove('sb-active');
+    }
 }
 
 function openOptions(fromPause = false) { 
@@ -596,7 +611,6 @@ let p1, p2, enemies=[], projectiles=[], enemyBullets=[], structures=[], warnings
 let particles=[], floatTexts=[], decals=[], screenShake=0;
 let traps = [];
 
-// NUEVAS VARIABLES PARA JOYSTICK MOVIL FLUIDO
 let joyActive = false, joyAngle = 0, joyDist = 0, currentInvIdx = 0;
 
 function saveGame() {
@@ -658,7 +672,7 @@ class Player {
         this.bisonAbilityCD = 0; this.bisonAbilityMaxCD = 900; 
         this.rageMode = 0; this.speedBoost = 0; this.tankAbilityActive = 0; this.burstActive = 0; this.invuln = 0;
         this.actVx = 0; this.actVy = 0;
-        this.joyVx = 0; this.joyVy = 0; // Vectores fluidos mobile
+        this.joyVx = 0; this.joyVy = 0; 
 
         if(classType === 'WARRIOR') { this.hp=120; this.maxHp=120; }
         if(classType === 'TANK') { this.hp=160; this.maxHp=160; this.armor=40; this.hasShield=true; } 
@@ -726,11 +740,11 @@ function spawnLevel() {
         document.getElementById('biome-txt').innerText = `JEFE: ${brSelectedBoss}`; document.getElementById('diff-txt').innerText = `PODER: ${Math.round(enemyPower*100)}%`; playBossMusic(5); 
 
         if(brSelectedBoss === 'AI_BOSS') {
-            showBossAlert("¡Clon de sombra DESPIERTA!");
+            if (!isMobile) showBossAlert("¡Clon de sombra DESPIERTA!");
             enemies.push({ x: GAME_W/2, y: 100, w: 20, h: 20, hp: 8000 * enemyPower, maxHp: 8000 * enemyPower, speed: 3.15, color: '#222', type: 'AI_BOSS', flash: 0, cd: 0, dashCd: 0, walkCycle: 0, animOffset: {x:0,y:0} });
         } else {
             let bColor = '#ccc'; if(brSelectedBoss === 'GOLEM') bColor = '#642'; if(brSelectedBoss === 'DEMON') bColor = '#f00';
-            showBossAlert("¡PREPÁRATE!");
+            if (!isMobile) showBossAlert("¡PREPÁRATE!");
             enemies.push({ x:GAME_W/2,y:100,w:60,h:60, hp: 4000 * enemyPower, maxHp: 4000 * enemyPower, speed:1.5, color: bColor, type:'BOSS', bossSubType: brSelectedBoss, flash:0, abilityTimer:400, abilityMax:400, walkCycle:0, animOffset:{x:0,y:0}, atkState:0, atkRange:120, atkWindup:25, atkDuration:25, reload:50, hasSpecialAtk: false });
         }
         return; 
@@ -746,10 +760,13 @@ function spawnLevel() {
     startMission();
 
     if(wave === 20) {
-        playBossMusic(wave); showBossAlert("¡Clon de sombra DESPIERTA!");
+        playBossMusic(wave); if (!isMobile) showBossAlert("¡Clon de sombra DESPIERTA!");
         enemies.push({ x: GAME_W/2, y: 100, w: 20, h: 20, hp: 8000 * enemyPower, maxHp: 8000 * enemyPower, speed: 3.15, color: '#222', type: 'AI_BOSS', flash: 0, cd: 0, dashCd: 0, walkCycle: 0, animOffset: {x:0,y:0} });
     } else if(wave % 5 === 0) {
-        playBossMusic(wave); document.getElementById('boss-alert').style.display='block'; setTimeout(()=>document.getElementById('boss-alert').style.display='none', 2000);
+        playBossMusic(wave); 
+        if (!isMobile) {
+            document.getElementById('boss-alert').style.display='block'; setTimeout(()=>document.getElementById('boss-alert').style.display='none', 2000);
+        }
         enemies.push({ x:GAME_W/2,y:100,w:60,h:60, hp:(2000+wave*250)*enemyPower,maxHp:(2000+wave*250)*enemyPower, speed:1.5,color:currentBiome.bossColor, type:'BOSS',bossSubType:currentBiome.bossType, flash:0,abilityTimer:400,abilityMax:400,walkCycle:0, animOffset:{x:0,y:0}, atkState:0, atkRange:120, atkWindup:25, atkDuration:25, reload:50, hasSpecialAtk: false });
     } else {
         let total = (isCoop?6:5)+Math.floor(wave*1.5); let rawEnemies = [];
@@ -815,11 +832,36 @@ function getWeaponStats(p){
 
 function resolveCollisions(e,nx,ny){
     e.x=nx; e.y=ny;
-    structures.forEach(s=>{if(e.x<s.x+s.w&&e.x+e.w>s.x&&e.y<s.y+s.h&&e.y+e.h>s.y){let l=(e.x+e.w)-s.x,r=(s.x+s.w)-e.x,t=(e.y+e.h)-s.y,b=(s.y+s.h)-e.y,m=Math.min(l,r,t,b);if(m===l)e.x-=l;else if(m===r)e.x+=r;else if(m===t)e.y-=t;else if(m===b)e.y+=b;}});
+    let sl = structures.length;
+    for(let i=0; i<sl; i++) {
+        let s = structures[i];
+        if(e.x<s.x+s.w&&e.x+e.w>s.x&&e.y<s.y+s.h&&e.y+e.h>s.y){
+            let l=(e.x+e.w)-s.x,r=(s.x+s.w)-e.x,t=(e.y+e.h)-s.y,b=(s.y+s.h)-e.y,m=Math.min(l,r,t,b);
+            if(m===l)e.x-=l;else if(m===r)e.x+=r;else if(m===t)e.y-=t;else if(m===b)e.y+=b;
+        }
+    }
     
     if(e.type && e.type !== 'PROJECTILE') {
-        enemies.forEach(other => { if(other !== e && Math.hypot(e.x - other.x, e.y - other.y) < 20) { let ang = Math.atan2(e.y - other.y, e.x - other.x); e.x += Math.cos(ang) * 1.5; e.y += Math.sin(ang) * 1.5; } });
-        [p1, p2].forEach(p => { if(p.alive && Math.hypot(e.x - p.x, e.y - p.y) < 18) { let ang = Math.atan2(e.y - p.y, e.x - p.x); e.x += Math.cos(ang) * 2; e.y += Math.sin(ang) * 2; } });
+        let el = enemies.length;
+        for(let j=0; j<el; j++) {
+            let other = enemies[j];
+            if(other !== e) {
+                let distSq = (e.x - other.x)**2 + (e.y - other.y)**2;
+                if(distSq < 400) { 
+                    let ang = Math.atan2(e.y - other.y, e.x - other.x); 
+                    e.x += Math.cos(ang) * 1.5; e.y += Math.sin(ang) * 1.5; 
+                }
+            }
+        }
+        [p1, p2].forEach(p => { 
+            if(p.alive) {
+                let distSq = (e.x - p.x)**2 + (e.y - p.y)**2;
+                if(distSq < 324) { 
+                    let ang = Math.atan2(e.y - p.y, e.x - p.x); 
+                    e.x += Math.cos(ang) * 2; e.y += Math.sin(ang) * 2; 
+                }
+            }
+        });
     }
     e.x=Math.max(0,Math.min(GAME_W-e.w,e.x));e.y=Math.max(0,Math.min(GAME_H-e.h,e.y));
 }
@@ -851,12 +893,13 @@ function applyDamage(target, dmgAmount) {
 
 function update() {
     if(state!=='PLAYING' && state !== 'MENU' && state !== 'DRAFT')return; 
-    gameTick++; updateMusicPlayerUI();
+    gameTick++; 
+    if(gameTick % 10 === 0) updateMusicPlayerUI();
     if(state === 'MENU' || state === 'SHOP' || state === 'ENCHANT') return; 
     if(screenShake>0){screenShake*=0.9;if(screenShake<0.5)screenShake=0;}
 
     if(spawnQueue.length > 0 && gameTick % 60 === 0) { enemies.push(spawnQueue.shift()); spawnParticles(enemies[enemies.length-1].x+10, enemies[enemies.length-1].y+10, '#fff', 10, 2); }
-    if(gameMode === 'MADMAN') { madmanTimer--; document.getElementById('madman-timer').innerText = "TIEMPO: " + Math.ceil(madmanTimer/60); if(madmanTimer <= 0) gameOver(); }
+    if(gameMode === 'MADMAN' && gameTick % 60 === 0) { madmanTimer--; document.getElementById('madman-timer').innerText = "TIEMPO: " + Math.ceil(madmanTimer/60); if(madmanTimer <= 0) gameOver(); }
 
     for(let i=particles.length-1;i>=0;i--){particles[i].update();if(particles[i].life<=0)particles.splice(i,1);}
     for(let i=floatTexts.length-1;i>=0;i--){floatTexts[i].update();if(floatTexts[i].life<=0)floatTexts.splice(i,1);}
@@ -927,8 +970,7 @@ function update() {
         let tg = null;
         if(p.autoAim) { if(gameMode === 'PVP') { tg = (p.id === 1) ? p2 : p1; if(!tg.alive) tg = null; } else { tg=getNearestEnemy(p); } }
         
-        if(dx!==0||dy!==0) { p.angle=Math.atan2(dy,dx); } 
-        else if(tg && !detectMobile()) { p.angle=Math.atan2((tg.y+tg.h/2)-(p.y+p.h/2),(tg.x+tg.w/2)-(p.x+p.w/2)); }
+        if(tg) { p.angle=Math.atan2((tg.y+tg.h/2)-(p.y+p.h/2),(tg.x+tg.w/2)-(p.x+p.w/2)); } else if(dx!==0||dy!==0) { p.angle=Math.atan2(dy,dx); }
         
         p.actVx = dx + p.vx; p.actVy = dy + p.vy;
         resolveCollisions(p,p.x+dx+p.vx,p.y+dy+p.vy);
@@ -1174,7 +1216,11 @@ function processBossAbilities(b,t){
     }
 }
 
-function showBossAlert(t){let e=document.getElementById('boss-alert');e.innerText=t;e.style.display='block';setTimeout(()=>e.style.display='none',2000);}
+function showBossAlert(t){
+    if (isMobile) return; 
+    let e=document.getElementById('boss-alert');
+    e.innerText=t;e.style.display='block';setTimeout(()=>e.style.display='none',2000);
+}
 
 function switchWeapon(p,n){ const m=[null,'SWORD','AXE','SPEAR','SHIELD','BOW','REVOLVER','STAFF','CROSSBOW', 'MJOLNIR', 'BISONTE', 'GOLDGUN', 'SHOTGUN', 'FIST']; let k=m[n]; if(n <= p.inventory.length) { p.weapon = WEAPONS[p.inventory[n-1]]; } else if((gameMode === 'SANDBOX' || gameMode === 'BOSSRUSH') && k && p.inventory.includes(k)) { p.weapon=WEAPONS[k]; } updateInventoryUI(); }
 function mobileSwapWeapon() { if(!p1 || p1.inventory.length === 0) return; currentInvIdx = (currentInvIdx + 1) % p1.inventory.length; switchWeapon(p1, currentInvIdx + 1); }
@@ -1183,16 +1229,11 @@ function openEnchantMenu(player) { if(!player) return; state = 'ENCHANT'; docume
 function applyEnchant(player, enchantId) { let wName = player.weapon.name; if(!player.weaponEnchants[wName]) player.weaponEnchants[wName] = []; player.weaponEnchants[wName].push(enchantId); document.getElementById('enchant-menu').style.display='none'; floatTexts.push(new FloatText(player.x, player.y-40, "ARMA ENCANTADA!", "#f0f")); playSfx('reload'); if(enemies.length === 0) openShop(); else state = 'PLAYING'; updateInventoryUI(); }
 
 function handleMobileAutoAttack(p) {
-    if (detectMobile() && p.autoAim && state === 'PLAYING') {
+    if (isMobile && p.autoAim && state === 'PLAYING') {
         let tg = getNearestEnemy(p);
         if (tg) {
             let dist = Math.hypot(tg.x - p.x, tg.y - p.y);
-            let targetAng = Math.atan2((tg.y+tg.h/2)-(p.y+p.h/2), (tg.x+tg.w/2)-(p.x+p.w/2));
-            let angDiff = Math.abs(targetAng - p.angle);
-            while(angDiff > Math.PI) angDiff -= 2 * Math.PI;
-            angDiff = Math.abs(angDiff);
-            
-            if (dist < getWeaponStats(p).range + 20 && angDiff < Math.PI / 6) {
+            if (dist < getWeaponStats(p).range + 20) {
                 if (p.atkTimer <= 0) keys[KEYBINDS.p1_atk] = true; 
             } else { keys[KEYBINDS.p1_atk] = false; }
         }
@@ -1356,12 +1397,10 @@ window.onkeydown=e=>{ let k = e.key.toLowerCase(); if(document.getElementById('s
 window.onkeyup=e=>{if(!bindingAction)keys[e.key.toLowerCase()]=false;}
 
 function detectMobile() {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 800;
     if (isMobile) {
         document.getElementById('mobile-controls').style.display = 'block';
         
         const joyZone = document.getElementById('joystick-zone');
-        const joyBase = document.getElementById('joystick-base');
         const joyStick = document.getElementById('joystick-stick');
         let joyRect;
         
