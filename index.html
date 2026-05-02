@@ -56,8 +56,8 @@
         </div>
 
         <div id="main-menu" class="overlay" style="background:#111;">
-            <h1 style="color:#a22; text-shadow:4px 4px #000; font-size:40px; margin-bottom:20px;">POLISHED<br>DUNGEON</h1>
-            <h3 style="color:#fe0; font-size:12px; margin-bottom:20px;">VERSIÓN 10.0: MOBILE</h3>
+            <h1 style="color:#a22; text-shadow:4px 4px #000; font-size:40px; margin-bottom:20px;">PIXEL DUNGEON</h1>
+            <h3 style="color:#fe0; font-size:12px; margin-bottom:20px;">VERSIÓN 24.0: ASTERION RAID</h3>
             
             <div class="char-select">
                 <div class="p-select">
@@ -87,25 +87,17 @@
             </div>
 
             <div class="menu-btn-group">
-                <button id="btn-continue" class="btn" style="border-color:#0f0; display:none;" onclick="loadGame()">CONTINUAR PARTIDA</button>
-                <button id="btn-mode" class="btn" style="border-color:#a0a" onclick="toggleGameMode()">MODO: NORMAL</button>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn" onclick="startGame(false)">JUGAR SOLO</button>
-                    <button class="btn" onclick="startGame(true)">CO-OP</button>
-                </div>
-                <button class="btn" style="border-color:#f80; color:#f80;" onclick="startPvP()">?? PVP: TORNEO (1v1)</button>
-                <button class="btn" style="border-color:#fe0" onclick="openOptions()">OPCIONES</button>
-                <button class="btn" onclick="deleteGame()" style="border-color:#f44; font-size:10px; padding:10px;">BORRAR DATOS</button>
+                <!-- Se llena dinámicamente desde JS -->
             </div>
         </div>
 
-        <div id="options-menu" class="overlay" style="display:none; justify-content: flex-start; padding-top: 50px;">
+        <div id="options-menu" class="overlay" style="display:none; justify-content: flex-start; padding-top: 50px; overflow-y:auto;">
             <h2 style="color:#fe0">CONFIGURACIÓN</h2>
             
             <div class="music-section">
                 <h3 style="color:#0af; margin-top:0;">MÚSICA PERSONALIZADA</h3>
                 <input type="file" id="music-input" accept="audio/*" style="display:none" onchange="loadMusic(this)">
-                <button class="btn btn-small" style="margin-bottom:10px; border-color:#0af; color:#0af;" onclick="document.getElementById('music-input').click()">SUBIR CANCIÓN (MP3/WAV)</button>
+                <button class="btn btn-small" style="margin-bottom:10px; border-color:#0af; color:#0af;" onclick="document.getElementById('music-input').click()">SUBIR CANCIÓN</button>
                 <div id="song-name" style="font-size:10px; color:#aaa; margin-bottom:10px;">NINGUNA CANCIÓN SELECCIONADA</div>
                 <div style="display:flex; justify-content:center; align-items:center; gap:20px;">
                     <button class="key-btn" onclick="toggleMusic()">PLAY/PAUSE</button>
@@ -120,12 +112,18 @@
                 <div class="opt-row" style="width: auto; gap: 10px;"><span>SFX:</span><span id="opt-sfx" class="opt-val" onclick="toggleOpt('sfx')">ON</span></div>
                 <div class="opt-row" style="width: auto; gap: 10px;"><span>PARTICULAS:</span><span id="opt-part" class="opt-val" onclick="toggleOpt('part')">ON</span></div>
             </div>
-            <h3 style="margin-bottom: 0;">CONTROLES</h3>
-            <div class="controls-grid">
-                <div class="control-group" id="p1-controls"><h3>JUGADOR 1</h3></div>
-                <div class="control-group" id="p2-controls"><h3>JUGADOR 2</h3></div>
+            
+            <div class="opt-row" style="width: 300px; justify-content:center; margin-bottom: 20px;">
+                <span style="font-size:8px; margin-right:10px;">OPACIDAD MÓVIL:</span>
+                <input type="range" id="mobile-opacity-slider" min="0.1" max="1" step="0.1" value="0.6" onchange="updateMobileOpacity(this.value)">
             </div>
-            <div style="margin-top: 20px;">
+
+            <h3 style="margin-bottom: 0;">CONTROLES PC</h3>
+            <div class="controls-grid">
+                <div class="control-group" id="p1-controls"></div>
+                <div class="control-group" id="p2-controls"></div>
+            </div>
+            <div style="margin-top: 20px; margin-bottom: 50px;">
                 <button class="btn btn-small" onclick="restoreDefaultKeys()">RESET KEYS</button>
                 <button class="btn btn-small" onclick="closeOptions()">VOLVER</button>
             </div>
@@ -218,20 +216,27 @@
     
     <div id="inventory-hud" style="display:none;"></div>
 
+    <!-- NUEVOS CONTROLES MÓVILES FLUIDOS -->
     <div id="mobile-controls">
-        <div id="dpad">
-            <div class="dpad-row"><button class="d-btn" id="m-up">^</button></div>
-            <div class="dpad-row">
-                <button class="d-btn" id="m-left"><</button>
-                <button class="d-btn" id="m-down">v</button>
-                <button class="d-btn" id="m-right">></button>
+        <div id="joystick-zone">
+            <div id="joystick-base">
+                <div id="joystick-stick"></div>
             </div>
         </div>
-        <div id="actions">
-            <button class="a-btn" id="m-shield" style="background:#44a; border-color:#88f;">R</button>
-            <button class="a-btn" id="m-dash" style="background:#aa0; border-color:#ff0;">---</button>
-            <button class="a-btn" id="m-atk" style="width:70px; height:70px; background:#a44; border-color:#f88;">E</button>
+        
+        <div id="action-zone">
+            <!-- Botones Superiores -->
+            <button class="m-btn m-btn-small" id="m-swap" style="background:#555; border-color:#888;">??</button>
+            <button class="m-btn m-btn-small" id="m-lock" style="background:#a50; border-color:#d80;">??</button>
+            
+            <!-- Botones Principales -->
+            <button class="m-btn" id="m-shield" style="background:#44a; border-color:#88f; grid-column: 1;">???</button>
+            <button class="m-btn" id="m-spec" style="background:#088; border-color:#0cc; grid-column: 2;">??</button>
+            <button class="m-btn" id="m-dash" style="background:#aa0; border-color:#ff0; grid-column: 1;">??</button>
+            <button class="m-btn" id="m-atk" style="background:#a44; border-color:#f88; grid-column: 2; transform: scale(1.2);">??</button>
         </div>
+        
+        <button id="m-pause" onclick="togglePause()">?</button>
     </div>
 
     <script src="script.js"></script>
