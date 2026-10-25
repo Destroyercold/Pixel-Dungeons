@@ -29,8 +29,16 @@ Any change to the static files is picked up by the live reload; `reload_preview`
 is not normally needed.
 
 ## Known quirks (pre-existing, not setup issues)
-- `script.js` references `menu.aac`, which is **not in the repository** (only
-  `boss.aac` and `boss2.aac` exist), so menu/victory music 404s.
+- Five audio files referenced by `script.js` are **not in the repository** and
+  were never in its git history, so they answer 404 (the browser logs them on
+  load because `bgm.src` is set from `MUSIC_PLAYLIST[0]`):
+  `menu.aac`, `ytmp3free.cc_ashnikko-worms-lyrics-youtubemp3free.org.mp3`,
+  `ytmp3free.cc_coldplay-hymn-for-the-weekend-official-video-youtubemp3free.org.mp3`,
+  `ytmp3free.cc_alan-walker-faded-youtubemp3free.org.mp3`,
+  `ytmp3free.cc_john-newman-love-me-again-youtubemp3free.org (1).mp3`.
+  Only `boss.aac` and `boss2.aac` exist, and every other local asset the app
+  references returns 200. Gameplay is unaffected apart from missing background
+  music.
 - `style.css` forces landscape in portrait via
   `body { transform: rotate(90deg); transform-origin: left top; top: 100%; }`.
   In a portrait viewport (375x812) this translates the whole body to
