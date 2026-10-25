@@ -1,0 +1,44 @@
+# Base44 development environment for Pixel Dungeons.
+# The app is a pure static site (index.html + script.js + style.css + .aac audio),
+# so it is served straight from the bind-mounted working tree by a live-reloading
+# static dev server. No build step, no backend, no database, no external services.
+
+services:
+  web:
+    image: node:22
+    working_dir: /app
+    restart: on-failure
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      # Dev-server tooling lives in a named volume so `npm install` never writes
+      # node_modules into the repository working tree.
+      - devserver:/deps
+    environment:
+      - BASE44_PREVIEW_MODE
+      # Bind mounts on this host do not deliver inotify events, so make the
+      # file watcher poll for changes (drives the browser live reload).
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=300
+    command:
+      - sh
+      - -ec
+      - |
+        if [ ! -x /deps/node_modules/.bin/live-server ]; then
+          npm install --prefix /deps --no-save --no-fund --loglevel=error live-server@1.2.2
+        fi
+        exec /deps/node_modules/.bin/live-server /app \
+          --port=3000 --host=0.0.0.0 --no-browser --wait=200
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          node -e "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  devserver:
